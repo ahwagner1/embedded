@@ -10,11 +10,11 @@ I have two STM32F401RE boards. One will be configured for TX, and the other will
 
 *General Setup*
 - Pins PA8-PA12 have alternate functions for UART1 on this board
-- - PA8 = USART1_CK
-- - PA9 = USART1_TX
-- - PA10 = USART1_RX
-- - PA11 = USART1_CTS
-- - PA12 = USART1_RTS
+  - PA8 = USART1_CK
+  - PA9 = USART1_TX
+  - PA10 = USART1_RX
+  - PA11 = USART1_CTS
+  - PA12 = USART1_RTS
 - Need to setup clocks for GPIOA and USART
 
 *TX Board Setup*
