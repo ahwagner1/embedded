@@ -13,8 +13,8 @@ typedef struct {
     volatile uint32_t GTPR;
 } USART_Def;
 
-#define USART1 ((USART_DEF*)0x40011000)
-#define USART2 ((USART_DEF*)0x40004400)
-#define USART6 ((USART_DEF*)0x40011400)
+#define USART1 ((USART_Def*)0x40011000)
+#define USART2 ((USART_Def*)0x40004400)
+#define USART6 ((USART_Def*)0x40011400)
 
 #endif /* USART_H */
