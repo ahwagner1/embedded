@@ -4,6 +4,13 @@
 
 // this board is using PA9 for USART1 TX
 // USART1 lies on APB2, max of 84 MHz
+// - reading more on clocks, I think HSI is 16 MHz
+// - HSE is 4-26 MHz, looking at the nucleo schematic, it looks like my board has 8MHz HSE
+// - PLL can be up to 84 MHz, need 
+
+#define HSI_FREQ 16000000
+#define HSE_FREQ 8000000
+
 int main(void) {
     // setup clocks and all that
     RCC->AHB1ENR |= 0x1; // gpioa clock enable
@@ -14,8 +21,13 @@ int main(void) {
     GPIOA->MODER |= (0x2 << 18);
 
     // set to high speed
-    GPIO->OSPEEDR &= ~(0x3 << 18);
-    GPIO->OSPEEDR |= (0x2 << 18);
+    // this doesn't mean clock speed
+    // this means how fast the electrical signal transitions
+    // for 9600 baud -> 9600 bits/s -> 9.6kHz toggle rate
+    // HSI == 16 MHz which is more than capable of handling this
+    // it seems like medium and high are the standard from examples I've seen
+    GPIOA->OSPEEDR &= ~(0x3 << 18);
+    GPIOA->OSPEEDR |= (0x2 << 18);
 
     // the alternate function is mapped to AF07 according to the datasheets
     // not sure if I need to set AFRL or AFRH, maybe both
@@ -26,7 +38,7 @@ int main(void) {
     GPIOA->AFRH |= (0x7 << 4);
 
     // setup uart
-    uint8_t clock_source = (RCC->CFGR >> 2) & 0x3; // HSE, HSI, or PLL
+    uint8_t clock_source = (RCC->CFGR >> 2) & 0x3; // HSI (00), HSE (01) or PLL (11)
     uint8_t apb2_ppre2 = (RCC->CFGR >> 13) & 0x7;
 
     uint32_t apb2_prescalar;
@@ -41,6 +53,20 @@ int main(void) {
     USART1->CR1 |= (0x1 << 13); // set usart to enable
     USART1->CR1 &= ~(0x1 << 12); // set the word length (0 == 1 start, 8 dataa, n stop)
     USART1->CR2 &= ~(0x3 << 12); // setting bits 13:12 to 00 for 1 stop bit
+
+    // so HSI should be default, but in the future I shoudl explore the others
+    if (clock_source == 0) {
+        // HSI Clock, calc BRR using HSI_FREQ
+        // ex: 16 oversamples, 16MHz / 9600 baud == 1666.67 BRR
+        // also might be worth checking if the apb2 prescalar will lower the clock enough toggle
+        // to reduce accuracy, that wouldnt be good
+    }
+    else if (clock_source == 1) {
+        // HSE clock, calc BRR using HSE_FREQ
+    }
+    else if (clock_source == 2) {
+        // PLL clock, calc using formula from ref man
+    }
     USART1->BRR; // need to find the clock freq to calculate what to put in here
                  // to configure the baud rate. im shooting for 9600 baud, 16 oversampling
                  // https://www.nichecalcs.com/stm32_uart_brr
