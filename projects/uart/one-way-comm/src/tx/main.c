@@ -52,14 +52,28 @@ int main(void) {
     
     USART1->CR1 |= (0x1 << 13); // set usart to enable
     USART1->CR1 &= ~(0x1 << 12); // set the word length (0 == 1 start, 8 dataa, n stop)
+    USART1->CR1 &= ~(0x1 << 15); // setting oversampling to 16 (0 bit)
     USART1->CR2 &= ~(0x3 << 12); // setting bits 13:12 to 00 for 1 stop bit
 
     // so HSI should be default, but in the future I shoudl explore the others
     if (clock_source == 0) {
         // HSI Clock, calc BRR using HSI_FREQ
-        // ex: 16 oversamples, 16MHz / 9600 baud == 1666.67 BRR
-        // also might be worth checking if the apb2 prescalar will lower the clock enough toggle
-        // to reduce accuracy, that wouldnt be good
+
+        // a little verbose, I could simplify this to just 16 * 9600 baud but thats lame
+        uint8_t over8 = (USART1->CR1 >> 15) & 0x1;
+        float usartdiv = (HSI_FREQ / apb2_prescalar) / (8 * (2 - over8) * 9600);
+        uint32_t mantissa = (uint32_t)(usartdiv);
+
+        uint32_t fraction_multiplier = over8 ? 8 : 16;
+        uint32_t fraction = (uint32_t)((usartdiv - mantissa) * fraction_multiplier + 0.5); // 0.5 for rounding
+        
+        // handle potential fraction overflow
+        if (fraction >= fraction_multiplier) {
+            mantissa++;
+            fraction = 0;
+        }
+        
+        USART1->BRR = (mantissa << 4) | (fraction & (over8 ? 0x7 : 0xF));
     }
     else if (clock_source == 1) {
         // HSE clock, calc BRR using HSE_FREQ
