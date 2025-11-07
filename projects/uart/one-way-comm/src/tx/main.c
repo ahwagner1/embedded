@@ -56,12 +56,12 @@ int main(void) {
     USART1->CR2 &= ~(0x3 << 12); // setting bits 13:12 to 00 for 1 stop bit
 
     // so HSI should be default, but in the future I shoudl explore the others
-    if (clock_source == 0) {
-        // HSI Clock, calc BRR using HSI_FREQ
+    if (clock_source == 0 || clock_source == 1) {
+        uint32_t clock_frequency = clock_source ? HSE_FREQ : HSI_FREQ;
 
         // a little verbose, I could simplify this to just 16 * 9600 baud but thats lame
         uint8_t over8 = (USART1->CR1 >> 15) & 0x1;
-        float usartdiv = (HSI_FREQ / apb2_prescalar) / (8 * (2 - over8) * 9600);
+        float usartdiv = (clock_frequency / apb2_prescalar) / (8 * (2 - over8) * 9600);
         uint32_t mantissa = (uint32_t)(usartdiv);
 
         uint32_t fraction_multiplier = over8 ? 8 : 16;
@@ -73,17 +73,28 @@ int main(void) {
             fraction = 0;
         }
         
-        USART1->BRR = (mantissa << 4) | (fraction & (over8 ? 0x7 : 0xF));
-    }
-    else if (clock_source == 1) {
-        // HSE clock, calc BRR using HSE_FREQ
+        USART1->BRR = (mantissa << 4) | (fraction & (over8 ? 0x7 : 0xF)); // reserved bits are all supposed to be 0
+                                                                          // so this method is fine for setting BRR
     }
     else if (clock_source == 2) {
         // PLL clock, calc using formula from ref man
+        // ignoring for now
+        return 0;
     }
-    USART1->BRR; // need to find the clock freq to calculate what to put in here
-                 // to configure the baud rate. im shooting for 9600 baud, 16 oversampling
-                 // https://www.nichecalcs.com/stm32_uart_brr
 
+    char msg[] = {'h', 'e', 'l', 'l', 'o'};
+
+    // start of the inf loop
+    while (true) {
+        // just gonna continuosly send the message above over the wire
+        for (uint8_t i = 0; i < 5; i++) {
+            char letter = msg[i];
+
+            USART1->DR |= (letter); // something like this, need to read more on how to fill this register
+            
+        }
+
+    }
+    
     return 0;
 }
