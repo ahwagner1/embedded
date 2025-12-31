@@ -51,6 +51,7 @@ int main(void) {
                                                   // which is either 2, 4, 8, 16
     
     USART1->CR1 |= (0x1 << 13); // set usart to enable
+    USART1->CR1 |= (0x1 << 3);  // set transmit enable bit
     USART1->CR1 &= ~(0x1 << 12); // set the word length (0 == 1 start, 8 dataa, n stop)
     USART1->CR1 &= ~(0x1 << 15); // setting oversampling to 16 (0 bit)
     USART1->CR2 &= ~(0x3 << 12); // setting bits 13:12 to 00 for 1 stop bit
@@ -82,18 +83,18 @@ int main(void) {
         return 0;
     }
 
-    char msg[] = {'h', 'e', 'l', 'l', 'o'};
+    char *msg = "ASHTON ROCKS";
 
     // start of the inf loop
-    while (true) {
+    while (1) {
         // just gonna continuosly send the message above over the wire
         for (uint8_t i = 0; i < 5; i++) {
-            char letter = msg[i];
 
-            USART1->DR |= (letter); // something like this, need to read more on how to fill this register
-            
+            // need to wait for the TXE bit to be set which signals TDR register has been transferred into shift reg
+            while (!(USART1->SR & (0x1 << 7)));
+
+            USART1->DR = msg[i];
         }
-
     }
     
     return 0;
