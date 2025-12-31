@@ -11,6 +11,12 @@
 #define HSI_FREQ 16000000
 #define HSE_FREQ 8000000
 
+// poor mans timer, will need to gut feel how many loop 
+// iterations will be needed to get a reasonable delay
+void delay(uint32_t val) {
+    for (volatile uint32_t i; i < val; i++);
+}
+
 int main(void) {
     // setup clocks and all that
     RCC->AHB1ENR |= 0x1; // gpioa clock enable
@@ -95,6 +101,8 @@ int main(void) {
 
             USART1->DR = msg[i];
         }
+
+        delay(1000000);
     }
     
     return 0;
