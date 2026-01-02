@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #define HSE_FREQ 16000000
+#define HSE_FREQ 8000000
 
 void setup(void) {
     // clocks setup
