@@ -1,3 +1,6 @@
 projects/uart/one-way-comm/startup/*
 projects/uart/one-way-comm/system/*
 projects/uart/one-way-comm/linker/*
+projects/uart/two-way-comm/startup/*
+projects/uart/two-way-comm/system/*
+projects/uart/two-way-comm/linker/*

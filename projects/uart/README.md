@@ -32,5 +32,15 @@ two-way-comm
 
 This time both boards will be able to TX and RX. I also want to include interrupts for this. Interrupts seem pretty important in embedded work and I think this would be a good project to start learning them alongside UART.
 
+The setup will look similiar to the one-way-comm project
+
+PA9 = USART1_TX
+PA10 = USART1_RX
+
+This time on both boards though:
+
+Board A PA9 -> Board B PA10
+Board B PA9 -> Board A PA10
+
 ## Project 3 
 still tbd
