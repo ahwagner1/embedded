@@ -26,3 +26,4 @@ cp -r stm32f401re_boilerplate/* ./projects/"$1"/"$2"
 echo "projects/$1/$2/startup/*" >> .gitignore
 echo "projects/$1/$2/system/*" >> .gitignore
 echo "projects/$1/$2/linker/*" >> .gitignore
+echo "projects/$1/$2/build/*" >> .gitignore

@@ -9,13 +9,26 @@ set(MCU_FAMILY STM32F401)
 set(MCU_MODEL STM32F401RE)
 
 add_executable(firmware
-    src/main.c
-    startup/startup_stm32f407xx.s
+    src/tx/main.c
+    startup/startup_stm32f401retx.s
+    system/syscalls.c
+    system/sysmem.c
+)
+
+target_include_directories(firmware PRIVATE
+    src/include
 )
 
 set_target_properties(firmware PROPERTIES
     SUFFIX ".elf"
     LINK_FLAGS "-T${CMAKE_SOURCE_DIR}/linker/STM32F401RETX_FLASH.ld"
+)
+
+add_custom_command(TARGET firmware POST_BUILD
+    COMMAND ${CMAKE_OBJCOPY} -O ihex $<TARGET_FILE:firmware> firmware.hex
+    COMMAND ${CMAKE_OBJCOPY} -O binary $<TARGET_FILE:firmware> firmware.bin
+    COMMAND ${CMAKE_SIZE} $<TARGET_FILE:firmware>
+    COMMENT "Generating HEX and BIN files"
 )
 
 add_custom_target(flash

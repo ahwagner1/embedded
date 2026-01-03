@@ -1,6 +1,13 @@
 projects/uart/one-way-comm/startup/*
 projects/uart/one-way-comm/system/*
 projects/uart/one-way-comm/linker/*
+projects/uart/one-way-comm/build/*
 projects/uart/two-way-comm/startup/*
 projects/uart/two-way-comm/system/*
 projects/uart/two-way-comm/linker/*
+projects/uart/two-way-comm/build/*
+
+projects/test/test/startup/*
+projects/test/test/system/*
+projects/test/test/linker/*
+projects/test/test/build/*

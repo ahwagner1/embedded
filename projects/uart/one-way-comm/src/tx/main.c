@@ -14,7 +14,7 @@
 // poor mans timer, will need to gut feel how many loop 
 // iterations will be needed to get a reasonable delay
 void delay(uint32_t val) {
-    for (volatile uint32_t i; i < val; i++);
+    for (volatile uint32_t i = 0; i < val; i++);
 }
 
 int main(void) {
@@ -66,22 +66,8 @@ int main(void) {
     if (clock_source == 0 || clock_source == 1) {
         uint32_t clock_frequency = clock_source ? HSE_FREQ : HSI_FREQ;
 
-        // a little verbose, I could simplify this to just 16 * 9600 baud but thats lame
-        uint8_t over8 = (USART1->CR1 >> 15) & 0x1;
-        float usartdiv = (clock_frequency / apb2_prescalar) / (8 * (2 - over8) * 9600);
-        uint32_t mantissa = (uint32_t)(usartdiv);
-
-        uint32_t fraction_multiplier = over8 ? 8 : 16;
-        uint32_t fraction = (uint32_t)((usartdiv - mantissa) * fraction_multiplier + 0.5); // 0.5 for rounding
-        
-        // handle potential fraction overflow
-        if (fraction >= fraction_multiplier) {
-            mantissa++;
-            fraction = 0;
-        }
-        
-        USART1->BRR = (mantissa << 4) | (fraction & (over8 ? 0x7 : 0xF)); // reserved bits are all supposed to be 0
-                                                                          // so this method is fine for setting BRR
+        uint32_t periphclk = clock_frequency / apb2_prescalar;
+        USART1->BRR = ((periphclk + (9600/2)) / 9600);
     }
     else if (clock_source == 2) {
         // PLL clock, calc using formula from ref man
@@ -94,7 +80,7 @@ int main(void) {
     // start of the inf loop
     while (1) {
         // just gonna continuosly send the message above over the wire
-        for (uint8_t i = 0; i < 5; i++) {
+        for (uint8_t i = 0; i < 12; i++) {
 
             // need to wait for the TXE bit to be set which signals TDR register has been transferred into shift reg
             while (!(USART1->SR & (0x1 << 7)));
@@ -102,7 +88,6 @@ int main(void) {
             USART1->DR = msg[i];
         }
 
-        delay(1000000);
     }
     
     return 0;
