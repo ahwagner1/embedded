@@ -75,12 +75,12 @@ int main(void) {
         return 0;
     }
 
-    char *msg = "ASHTON ROCKS";
+    char *msg = "TEST123\n";
 
     // start of the inf loop
     while (1) {
         // just gonna continuosly send the message above over the wire
-        for (uint8_t i = 0; i < 12; i++) {
+        for (uint8_t i = 0; i < 8; i++) {
 
             // need to wait for the TXE bit to be set which signals TDR register has been transferred into shift reg
             while (!(USART1->SR & (0x1 << 7)));
@@ -88,6 +88,7 @@ int main(void) {
             USART1->DR = msg[i];
         }
 
+        delay(1000000);
     }
     
     return 0;

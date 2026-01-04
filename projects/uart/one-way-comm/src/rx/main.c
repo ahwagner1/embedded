@@ -2,15 +2,15 @@
 #include "../include/gpio.h"
 #include "../include/rcc.h"
 
-#define HSI_FRQ 16000000
+#define HSI_FREQ 16000000
 #define HSE_FREQ 8000000
 
-void led_on(void) {
-    GPOIA->ODR |= (0x1 << 5);
+void led_on() {
+    GPIOA->ODR |= (0x1 << 5);
 }
 
 void led_off() {
-    GPIOA->ODR &= ~(1 << 5);
+    GPIOA->ODR &= ~(0x1 << 5);
 }
 
 int main(void) {
@@ -46,22 +46,8 @@ int main(void) {
     if (clock_source == 0 || clock_source == 1) {
         uint32_t clock_frequency = clock_source ? HSE_FREQ : HSI_FREQ;
 
-        // a little verbose, I could simplify this to just 16 * 9600 baud but thats lame
-        uint8_t over8 = (USART1->CR1 >> 15) & 0x1;
-        float usartdiv = (clock_frequency / apb2_prescalar) / (8 * (2 - over8) * 9600);
-        uint32_t mantissa = (uint32_t)(usartdiv);
-
-        uint32_t fraction_multiplier = over8 ? 8 : 16;
-        uint32_t fraction = (uint32_t)((usartdiv - mantissa) * fraction_multiplier + 0.5); // 0.5 for rounding
-        
-        // handle potential fraction overflow
-        if (fraction >= fraction_multiplier) {
-            mantissa++;
-            fraction = 0;
-        }
-        
-        USART1->BRR = (mantissa << 4) | (fraction & (over8 ? 0x7 : 0xF)); // reserved bits are all supposed to be 0
-                                                                          // so this method is fine for setting BRR
+        uint32_t periphclk = clock_frequency / apb2_prescalar;
+        USART1->BRR = ((periphclk + (9600/2)) / 9600);
     }
     else if (clock_source == 2) {
         // PLL clock, calc using formula from ref man
@@ -76,8 +62,8 @@ int main(void) {
     GPIOA->MODER |= (1 << 10);
 
     while (1) {
-        if (USART->SR & (0x1 << 5)) {
-            uint8_t rx_data = USART->DR & 0xFF;
+        if ((USART1->SR >> 5) & 0x1) {
+            uint8_t rx_data = USART1->DR & 0xFF;
 
             // somehow print out the data
             // could store in buffer and then use gdb to see the buffer contents
