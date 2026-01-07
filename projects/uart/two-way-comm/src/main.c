@@ -4,10 +4,38 @@
 
 #include <stdint.h>
 
-#define HSE_FREQ 16000000
+#define HSI_FREQ 16000000
 #define HSE_FREQ 8000000
 
-void setup(void) {
+enum InterruptFlags {
+    FLAG_NORMAL     = 0x1 << 0,
+    FLAG_WAITING_TX = 0x1 << 1, // waiting to TX, currently RX
+    FLAG_TX         = 0x1 << 2, // TX allowed, no current RX
+};
+
+uint32_t flags = 0; // all flags off
+
+// gpio interrupt handler
+// this will be used to handle button interrupt for sending data
+void EXTI0_IRQHandler(void) {
+    // we have triggered whe button interrupt
+    // could transmit from here
+    // but I think that setting a flag is a better approach incase we need to wait to transmit
+    
+    if ((USART1->SR >> 4) & 0x1) {
+        // bit 4 of SR translates to idle line detected
+        flags = 0;
+        flags |= FLAG_TX;
+        return;
+    }
+
+}
+
+/*
+*   Setting up all the UART essentials for TX/RX
+*   Might move things into other functions to further divide
+*/
+void uart_setup(void) {
     // clocks setup
     RCC->AHB1ENR |= 0x1;
     RCC->APB2ENR |= (0x1 << 4);
@@ -70,7 +98,12 @@ void setup(void) {
 }
 
 int main(void) {
-    setup();
+    uart_setup();
+
+    // super loop go brrrrr
+    while (1) {
+
+    }
 
     return 0;
 }
