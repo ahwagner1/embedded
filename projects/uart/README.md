@@ -34,13 +34,32 @@ This time both boards will be able to TX and RX. I also want to include interrup
 
 The setup will look similiar to the one-way-comm project
 
-PA9 = USART1_TX
-PA10 = USART1_RX
+- PA9 = USART1_TX
+- PA10 = USART1_RX
 
 This time on both boards though:
 
-Board A PA9 -> Board B PA10
-Board B PA9 -> Board A PA10
+- Board A PA9 -> Board B PA10
+- Board B PA9 -> Board A PA10
+
+Since the UART paths are entirely different wires, we should be able to do full-duplex communication.
+In order to handle TX and RX, I am making use of the TXEIE and RXNEIE interrupts.
+
+The general workflow looks like:
+1. An EXTI interrupt is generated when the button on PA0 is pressed, signaling to the board to start a transmission.
+This interrupt sets the TXEIE interrupt to *enabled*
+2. TXEIE interrupt will trigger when a byte is ready to transmit. 
+Once the full message is transmitted, the TXEIE interrupt is disabled to prevent locking.
+3. At the same time, RXNEIE interrupt will trigger whenever there is incoming data.
+
+Both UART interrupts are handled by the function `void USART1_IRQHandler(void);`
+
+Reading from the status register lets us determine which interrupt to handle (or maybe both).
+
+The external buttons will be wired into a RC filter circuit in an **Active Low** configuration.
+This RC filter should let us solve the button debouncing without the need to implement a software solution.
+
+This setup should support a robust, two-way communication between the boards.
 
 ## Project 3 
 still tbd
