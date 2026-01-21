@@ -11,3 +11,11 @@ projects/test/test/startup/*
 projects/test/test/system/*
 projects/test/test/linker/*
 projects/test/test/build/*
+projects/dma/dma_intro/startup/*
+projects/dma/dma_intro/system/*
+projects/dma/dma_intro/linker/*
+projects/dma/dma_intro/build/*
+projects/timers/led_timer/startup/*
+projects/timers/led_timer/system/*
+projects/timers/led_timer/linker/*
+projects/timers/led_timer/build/*
